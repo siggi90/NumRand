@@ -11,7 +11,7 @@ No limit is set on the number of digits of the numbers NumRand can generate.
 
 Getting started:
 
-Run create_databases.php to create databases necessary for NumRand. To change the initial state of the algorithm you can add a new row to the 'state' table, with a new particle position and direction. Keep in mind the particle position must be the distance of 50 from the center point (0, 0). If the distance is greater the point is out of bounds. Other things that can be changed to alter the state of the algorithm are 'Phase offsets' which can be changed from within code or from the 'cylinders' table. Phase offsets and particle directions must be between 0 and 359 (including 359) NumRand has two functions:
+Run create_databases.php to create databases necessary for NumRand. To change the initial state of the algorithm you can add a new row to the 'state' table, with a new particle position and direction. Keep in mind the particle position must be within the distance of 50 from the center point (0, 0). If the distance is greater the point is out of bounds. Other things that can be changed to alter the state of the algorithm are 'Phase offsets' which can be changed from within code or from the 'cylinders' table. Phase offsets and particle directions must be between 0 and 359 (including 359) NumRand has two functions:
 
     Generate Random Numbers
     Randomize List
