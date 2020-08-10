@@ -1,21 +1,23 @@
 <?
 
-namespace NumRand;
-
 class random extends _class {
 	private $range;
 	
 	private $cylinders;
 	
-	public function __construct($sql, $statement) {
+	public function __construct($range, $sql, $statement) {
 		parent::__construct($sql, $statement);
+		$this->range = $range;	
 		$this->cylinders = array();
 		$this->construct_cylinders(13);
 		$this->get_state();
-		//$this->save_state();	//To Initialize algorithm comment out get_state and comment-in save state and run constructor.
+		//$this->save_state();
 	}
 	
 	function construct_cylinders($count=13) {
+		/*$speed = 1;
+		$phase_offset = 0;
+		$interlope_switch = 0;*/
 		
 		$speed = $this->prime_numbers($count);
 		$phase_offset = $this->construct_phase_offset($count);
@@ -24,20 +26,39 @@ class random extends _class {
 		
 		$phase_offset[] = 0;
 		$speed[] = 1;
-		
+		/*//echo "speed<br>";
+		$this->print_arr($speed);
+		//echo "phase_offset<br>";
+		$this->print_arr($phase_offset);*/
 		
 		$counter = 0;
 		while($counter < $count) {
 			array_push($this->cylinders, new cylinder($phase_offset[$counter], $speed[$counter]));
 			$counter++;
 		}
+		
+		/*for($phase_index = 0; $phase_index < 18; $phase_index += 3) {
+			for($auxiliary_index = 36; $auxiliary_index > 0; $auxiliary_index -= 6) {
+				$phase_offset = $phase_index + $auxiliary_index;*/
+				/*if($interlope_switch == 0) {
+					$speed++;
+				} else {
+					$speed--;	
+				}
+				if($speed > 6 && $interlope_switch == 0) {
+					$interlope_switch = 1;
+				} else if($speed <= 0  && $interlope_switch == 1)  {
+					$interlope_switch = 0;
+				}
+			}
+		}*/
 	}
 	
 	function _random($start, $stop, $amount) {
 		$results = array();
 		$number = $stop - $start;
 		$offset = $start;
-		if($number <= 359) {
+		/*if($number <= 359) {
 			$counter = 0;
 			while($counter < $amount) {
 				$result = $this->run($number);	
@@ -45,39 +66,49 @@ class random extends _class {
 				$results[] = $result;
 				$counter++;
 			}
-		} else {
-			$digits = strlen($number)-1;
-			$max_first_digit = substr($number, 0, 1);
-			while($amount > 0) {
-				$intermediate_results = $this->_random_length($amount, $digits);
-				$add_count = 0;
-				foreach($intermediate_results as $value) {
-					$first_digit = $this->run($max_first_digit);
-					$value = $first_digit.$value;
-					if($value <= $number) {
-						$results[] = $value;	
-						$add_count++;
-					}
+		} else {*/
+		$digits = strlen($number);
+		$max_first_digit = substr($number, 0, 1);
+		while($amount > 0) {
+			$intermediate_results = $this->_string($digits);
+			//echo "intermediate_results:\n";
+			//var_dump($intermediate_results);
+			/*$add_count = 0;
+			foreach($intermediate_results as $value) {
+				$first_digit = $this->run($max_first_digit);
+				$value = $first_digit.$value;
+				if($value <= $number) {
+					$results[] = $value;	
+					$add_count++;
 				}
-				$amount = $amount - $add_count;
 			}
-			foreach($results as $index => $value) {
-				$results[$index] = $value + $offset;	
+			$amount = $amount - $add_count;*/
+			if($intermediate_results > $number) {
+				
+			} else {
+				$results[] = $intermediate_results;		
+				$amount = $amount - 1;	
 			}
 		}
+		foreach($results as $index => $value) {
+			//var_dump($value);
+			$results[$index] = $value + $offset;	
+		}
+		//}
 		return $results;
 	}
 	
 	function _string($digits) {
 		$counter = 0;
 		$result = "";
-		$double_digits = floor($digits / 2);
+		/*$double_digits = floor($digits / 2);
 		while($counter < $double_digits) {
 			$value = $this->run(99);
 			if(strlen($value) < 2) {
 				$value = "0".$value;	
 			}
 			$result .= $value;
+			//var_dump($result);
 			$counter++;	
 		}
 		$counter = 0;
@@ -85,6 +116,12 @@ class random extends _class {
 		while($counter < $remaining_digits) {
 			$value = $this->run(9);
 			$result .= $value;
+			//var_dump($result);
+			$counter++;	
+		}*/
+		while($counter < $digits) {
+			$digit = $this->run(359);
+			$result .= $digit;
 			$counter++;	
 		}
 		return $result;
@@ -114,7 +151,7 @@ class random extends _class {
 			'particle_direction' => $this->get_direction()
 		);
 		$this->statement->generate($v, 'numrand.state', 1);
-		$result = $this->sql->execute($this->statement->get(), true);
+		$result = $this->sql->execute($this->statement->get());
 		$id = $this->sql->last_id();	
 		foreach($this->cylinders as $index => $cylinder) {
 			$v = array(
@@ -124,7 +161,7 @@ class random extends _class {
 				'speed' => $cylinder->get_speed()
 			);
 			$this->statement->generate($v, 'numrand.cylinder', 1);
-			$this->sql->execute($this->statement->get(), true);	
+			$this->sql->execute($this->statement->get());	
 		}
 	}
 	
@@ -154,6 +191,7 @@ class random extends _class {
 	
 	public function print_arr($arr) {
 		foreach($arr as $key => $value) {
+			//echo $key." : ".$value."<br>";	
 		}
 	}
 	
@@ -171,6 +209,9 @@ class random extends _class {
 	
 	public function is_prime($number) {
 		for($counter=2; $counter<$number; $counter++) {
+			/*//echo "number: ".$number."<br>";
+			//echo "counter: ".$counter."<br>";
+			//echo "remainder: ".($number % $counter)."<br>";*/
 			if($number % $counter == 0) {
 				return false;	
 			}
@@ -217,11 +258,18 @@ class random extends _class {
 			}
 		}
 		return $phases;
+		/*for($phase_index = 0; $phase_index < 18; $phase_index += 3) {
+			for($auxiliary_index = 36; $auxiliary_index > 0; $auxiliary_index -= 6) {
+			}
+		}*/
 	}
 	
 	private $been_run = false;
 	
 	public function run_simulation($index=0, $particle_position=array(0,0), $particle_direction=60) {
+		/*//echo "count cylinders: ".count($this->cylinders)."<br>";
+		//echo "index: ".$index."<br>";*/
+		//$this->been_run = true;
 		if($index < count($this->cylinders)) {
 			if($particle_position != NULL) {
 				$this->cylinders[$index]->set_position($particle_position);
@@ -230,6 +278,8 @@ class random extends _class {
 				$this->cylinders[$index]->set_direction($particle_direction);
 			}
 			$result = $this->cylinders[$index]->calculate_translation();
+			/*//echo "<br>result particle_pos: ".$result['particle_position'][0]." - ".$result['particle_position'][1]."<br>";
+			//echo "result direction : ".$result['particle_direction']."<br><br>";*/
 			return $this->run_simulation(++$index, $result['particle_position'], $result['particle_direction']);
 		}
 		$this->cylinders[0]->set_position($this->get_position());
@@ -238,6 +288,16 @@ class random extends _class {
 		return $particle_position;
 	}
 	
+	/*public function get_number() {
+		$phase = $this->cylinders[count($this->cylinders)-1]->get_phase_offset();
+		$step_size = 360 / $this->range;
+		$counter = 0;
+		while($counter < $phase) {
+			$counter += $step_size;	
+		}
+		$number = $counter / $step_size;
+		return $number;	
+	}*/
 	
 	private $step_size;
 	private $dismiss_count;
@@ -245,11 +305,14 @@ class random extends _class {
 	public function step_size() {
 		$step_size = 360 / $this->range;
 		if(360 % $step_size == 0) {
+			//return $step_size;	
 		} else {
 			$step_size = ceil($step_size);
 			if(360 % $step_size == 0) {
+				//return $step_size;	
 			} else {
 				while(360 % $step_size != 0) {
+					////echo "step_change: ".$step_size."<br>";
 					$step_size--;	
 				}
 			}
@@ -258,29 +321,21 @@ class random extends _class {
 		$dismiss = $step_count - $this->range;
 		$this->step_size = $step_size;
 		$this->dismiss_count = $dismiss;
+		/*//echo "step_size: ".$this->step_size."<br>";
+		//echo "dismiss_count: ".$this->dismiss_count."<br><br>";*/
 		return $this->step_size;
 	}
 	
 	public function get_number() {
+		/*if(!$this->been_run) {
+			$this->run_simulation(0, $this->get_first_position(), $this->get_first_direction());	
+		}*/
 		$phase = $this->cylinders[count($this->cylinders)-1]->get_phase_offset();
-		$step_size = $this->step_size();
-		$counter = 0;
-		while($counter <= $phase) {
-			$counter += $step_size;	
+		if($phase == 0) {
+			return 0;	
 		}
-		$number = $counter / $step_size;
-		if(strpos($number, ".") !== false) {
-			$split = explode(".", $number);
-			$number = $split[0];	
-		}
-		if($number > $this->range) {
-			$this->run_simulation(0, $this->get_position(), $this->get_direction());
-			return $this->get_number();
-		} else {
-			$query = "INSERT INTO numrand.result_log (number, max, ratio) VALUES(".($number-1).", ".$this->range.", '".(($number-1)/$this->range)."')";
-			$this->sql->execute($query);
-			return ($number-1);
-		}
+		$number = floor($phase/36);
+		return $number;
 	}
 	
 	public function get_position() {
@@ -308,12 +363,28 @@ class random extends _class {
 			}
 		}
 		$list = $clean_list;
-		$count = count($list);
-		$numbers = $this->_random(0, $count, $count);
+		//var_dump($list);
+		
+		$output_list = array();
+		
+		$count = count($list)-1;
+		while($count >= 0) {
+			$numbers = $this->_random(0, $count, 1);
+
+			
+			$output_list[] = $list[$numbers[0]];
+			unset($list[$numbers[0]]);
+			$list = array_values($list);
+			$count--;
+		}
+		
+		/*$numbers = $this->_random(0, $count, $count);
+		//var_dump($numbers);
 		$output_list = array();
 		
 		foreach($list as $index => $value) {
 			$placement = $numbers[$index];
+			//echo "placement: ".$placement."<br>";
 			if(!isset($output_list[$placement])) {
 				$output_list[$placement] = $value;	
 			} else {
@@ -330,11 +401,56 @@ class random extends _class {
 				}
 			}
 		}
-		ksort($output_list);
+		ksort($output_list);*/
+		//var_dump($output_list);
 		return implode("
 ", $output_list);	
 	}
 	
+	/*public function get_number() {
+		$particle_position = $this->run_simulation();
+		$area = pi()*2500;
+		$grid_unit = $area / $this->range;
+		
+		$grid_unit_length = sqrt($grid_unit);
+		
+		$abs_x = abs($particle_position[0]);
+		$abs_y = abs($particle_position[1]);
+		
+		$grid_x = round($abs_x / $grid_unit_length);
+		$grid_y = round($abs_y / $grid_unit_length);
+		$offset_increment = $this->range / 4;
+		$offset = 0;
+		if($particle_position[0] < 0) {
+			if($particle_position[1] >= 0) {
+				
+			} else {
+				$offset = 2*$offset_increment;
+			}
+		} else {
+			if($particle_position[1] >= 0) {
+				$offset = $offset_increment;
+			} else {
+				$offset = 3*$offset_increment;
+			}
+		}
+		$number = ($grid_x*$grid_y)+$offset;
+		return $number;
+	}*/
+	
+	/*public function get_state() {
+		return $this->cylinders[0]->get_state();	
+	}*/
 }
 
+/*$state = $random->get_state();
+//echo "direction: ".$state['direction']."<br>";
+//echo "offset: ".$state['phase_offset']."<br>";*/
+
+/*$prime = $random->prime_numbers(5);
+var_dump($prime);*/
+
+//var_dump($result);
+
+////echo $random->get_number();
 ?>
